@@ -14,6 +14,10 @@ return [
 
     'baseurl'   => 'http://www.probo.nl',
     'skuPrefix' => 'XPR-10',
+    'brand' => [
+        'old' => 'Taylor',
+        'new' => 'Jeffrey'
+    ],
 
     /*
     |--------------------------------------------------------------------------

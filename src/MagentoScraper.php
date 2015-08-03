@@ -32,8 +32,9 @@ class MagentoScraper
      */
     public function __construct($config)
     {   
-        $this->client    = new Client();
-        $this->filters = $config['filters'];
+        $this->client   = new Client();
+        $this->filters  = $config['filters'];
+        $this->brand    = $config['brand']
     }
 
     /**
@@ -201,5 +202,13 @@ class MagentoScraper
         }
 
         return [$values, $type];
+    }
+
+    private function replaceBrand( $string ){
+
+        $string = preg_replace('/\b'.$this->brand['old'].'\b/u', $this->brand['new'], $string );
+        $string = preg_replace('/\b'.strtolower($this->brand['old']).'\b/u', strtolower($this->brand['new']), $string );
+
+        return $string;
     }
 }
