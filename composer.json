@@ -1,0 +1,46 @@
+{
+    "name": "beaudinn-greve/magentoscraper",
+    "description": "MagentoScraper Provides A Magento product scraper Admin Module For Laravel 5",
+    "keywords": ["laravel", "framework", "MagentoScraper", "magentoscraper", "MagentoScraper", "Laravel MagentoScraper", "Laravel-MagentoScraper", "BeaudinnGreve", "Beaudinn Greve"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Beaudinn Greve",
+            "email": "Beaudinn@gmail.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Beaudinn/Laravel-Magento-Scraper"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Beaudinn/laravel-magento-integration"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0",
+        "fabpot/goutte": "v2.0.1"
+    },
+    "require-dev": {
+        "beaudinn-greve/testbench": "~2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BeaudinnGreve\\MagentoScraper\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BeaudinnGreve\\Tests\\MagentoScraper\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.3-dev"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
