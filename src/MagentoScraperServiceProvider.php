@@ -26,7 +26,7 @@ class MagentoScraperServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->package('beaudinn-greve/magentoscraper');
+        //$this->package('beaudinn-greve/magentoscraper');
     }
 
 
