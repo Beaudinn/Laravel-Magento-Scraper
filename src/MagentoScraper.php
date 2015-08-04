@@ -24,6 +24,7 @@ class MagentoScraper
     private $client;
     private $filters;
     private $optionsConfig;
+    private $crawler;
 
     /**
      *  Construct Magento Scraper Instance
@@ -34,7 +35,7 @@ class MagentoScraper
     {   
         $this->client   = new Client();
         $this->filters  = $config['filters'];
-        $this->brand    = $config['brand']
+        $this->brand    = $config['brand'];
     }
 
     /**
@@ -54,7 +55,7 @@ class MagentoScraper
     /**
      * 
      */
-    private function setOptionsConfig(){
+    public function setOptionsConfig(){
 
         $this->crawler->filter('script')->each(function(Crawler $node, $i) {
 
@@ -79,9 +80,9 @@ class MagentoScraper
         return $this->product = $this->startProductScraper( $filters );
     }
 
-    public function getOptions(){
+    public function getOptions( $filters ){
 
-        return $this->options = $this->startOptionsScraper();
+        return $this->options = $this->startOptionsScraper( $filters );
     }
 
     /**
@@ -92,44 +93,46 @@ class MagentoScraper
      */
     private function startProductScraper( $filters ){
 
+        $filters = array_merge($this->filters['product'], $filters);
         // lets check if there is a product.
         // The use CssSelector Dom Components like jquery for selecting data attributes.
-       $check = $this->crawler->filter($filters['product']['name'])->count();
+       $check = $this->crawler->filter($filters['name'])->count();
 
         if ($check) {
 
             $this->contents =  [
-                        'name'              => $this->crawler->filter($this->filters['product']['name'])->text(),
-                        'short_description' => $this->replaceBrand($this->crawler->filter($this->filters['product']['short_description'])->text()),
-                        'description'       => $this->replaceBrand($this->crawler->filter($this->filters['product']['description'])->html()),
-                        'image'             => [$this->crawler->filter($this->filters['product']['image'])->attr('src')],
-                        'sku'               => $this->crawler->filter($this->filters['product']['sku'])->first()->text(),
-                        'meta_title'        => $this->replaceBrand($this->crawler->filter($this->filters['product']['meta_title'])->text()),
-                        'meta_keyword'      => $this->replaceBrand($this->crawler->filter($this->filters['product']['meta_keyword'])->attr('content')),
-                        'meta_description'  => $this->replaceBrand($this->crawler->filter($this->filters['product']['meta_description'])->attr('content')),
+                        'name'              => $this->crawler->filter($filters['name'])->text(),
+                        'short_description' => $this->replaceBrand($this->crawler->filter($filters['short_description'])->text()),
+                        'description'       => $this->replaceBrand($this->crawler->filter($filters['description'])->html()),
+                        'image'             => [$this->crawler->filter($filters['image'])->attr('src')],
+                        'sku'               => $this->crawler->filter($filters['sku'])->first()->text(),
+                        'meta_title'        => $this->replaceBrand($this->crawler->filter($filters['meta_title'])->text()),
+                        'meta_keyword'      => $this->replaceBrand($this->crawler->filter($filters['meta_keyword'])->attr('content')),
+                        'meta_description'  => $this->replaceBrand($this->crawler->filter($filters['meta_description'])->attr('content')),
                 ];
         }
         return $this->contents;
     }
 
-    private function startOptionsScraper(){
+    private function startOptionsScraper( $filters ){
 
+        $this->optionsFilters = array_merge($this->filters['options'], $filters);
         // lets check if our filter has result.
-        $countContent = $this->crawler->filter($this->filters['options']['check'])->count();
+        $countContent = $this->crawler->filter($this->optionsFilters['check'])->count();
 
         if ($countContent) {
             // loop through in each "wrapper elements" to get the data that we need.
-            $this->crawler->filter($this->filters['options']['item'])->each(function(Crawler $node, $i) {
+            $this->crawler->filter($filters['item'])->each(function(Crawler $node, $i) {
 
                     $item = [];
-                    $item['title']     = preg_replace("/[&*$]+/", "", $node->filter($this->filters['options']['title'])->text());
+                    $item['title']     = preg_replace("/[&*$]+/", "", $node->filter($this->optionsFilters['title'])->text());
                     $item['id']        = $this->getOptionId($node->attr('class'));
 
                     if(!$item['id']){
 
-                        $countContent = $node->filter($this->filters['options']['values']['types']['input'])->count();
+                        $countContent = $node->filter($this->optionsFilters['values']['types']['input'])->count();
                         if($countContent){
-                           $item['id'] =  $this->getOptionId($node->filter($this->filters['options']['values']['types']['input'])->first()->attr('id'));  
+                           $item['id'] =  $this->getOptionId($node->filter($this->optionsFilters['values']['types']['input'])->first()->attr('id'));  
 
                         }
 
@@ -146,6 +149,7 @@ class MagentoScraper
                 
             });
         }
+
         return $this->options;
     }
 
@@ -153,20 +157,20 @@ class MagentoScraper
          $type = '';
          
         //Radio options
-        $values = $node->filter($this->filters['options']['values']['types']['radio'])->each(function(Crawler $node, $i) {
+        $values = $node->filter($this->optionsFilters['values']['types']['radio'])->each(function(Crawler $node, $i) {
 
             $item = [];
             $item['id']             = trim($node->filter('input')->attr('value'));
-            $item['title']          = $node->filter($this->filters['options']['values']['title'])->text();
-            $item['sku']            = $node->filter($this->filters['options']['values']['sku'])->text();
+            $item['title']          = $node->filter($this->optionsFilters['values']['title'])->text();
+            $item['sku']            = $node->filter($this->optionsFilters['values']['sku'])->text();
             $item['image']          = $this->optionsConfig[1][$item['id']][0];
             $item['code']           = $this->optionsConfig[1][$item['id']][1];
             $item['childs']         = array_merge($this->optionsConfig[1][$item['id']][2], $this->optionsConfig[1][$item['id']][3]);
             $item['description']    = '';
 
-            if($node->filter($this->filters['options']['values']['description'])->count()){
+            if($node->filter($this->optionsFilters['values']['description'])->count()){
 
-                $item['description']    = $node->filter($this->filters['options']['values']['description'])->text();
+                $item['description']    = $node->filter($this->optionsFilters['values']['description'])->text();
             }
 
             return $item;
@@ -178,7 +182,7 @@ class MagentoScraper
         
         if(count($values) <= 0){
 
-            $values = $node->filter($this->filters['options']['values']['types']['select'])->each(function(Crawler $node, $i) {
+            $values = $node->filter($this->optionsFilters['values']['types']['select'])->each(function(Crawler $node, $i) {
 
                 $value = $node->attr('value');
                 if($value){
@@ -195,7 +199,7 @@ class MagentoScraper
             }
         }
 
-        $countContent = $node->filter($this->filters['options']['values']['types']['input'])->count();
+        $countContent = $node->filter($this->optionsFilters['values']['types']['input'])->count();
         if(count($values) === 0 && $countContent){
             $item = [];
             $type = 'field';
@@ -203,6 +207,18 @@ class MagentoScraper
 
         return [$values, $type];
     }
+
+    private function getOptionId( $class ){
+
+        preg_match_all('/([\d]+)/',trim($class), $match);
+        
+        if(isset($match[1][0])){
+            return (int) $match[1][0];
+        }
+
+        return 0;
+    }
+
 
     private function replaceBrand( $string ){
 

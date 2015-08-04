@@ -26,7 +26,11 @@ class MagentoScraperServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //$this->package('beaudinn-greve/magentoscraper');
+        $source = realpath(__DIR__.'/../config/magentoscraper.php');
+
+        $this->publishes([$source => config_path('magentoscraper.php')]);
+
+        $this->mergeConfigFrom($source, 'magentoscraper');
     }
 
 
@@ -54,8 +58,11 @@ class MagentoScraperServiceProvider extends ServiceProvider
 
         $this->app['magentoscraper'] = $this->app->share(function($app)
         {
-            return new MagentoScraper($app['config']);
+            return new MagentoScraper($app['config']['magentoscraper']);
         });
+
+        
+        $this->app->alias('magentoscraper', 'BeaudinnGreve\MagentoScraper\MagentoScraper');
 
     }
 
